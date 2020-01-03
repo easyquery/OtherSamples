@@ -1,0 +1,137 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://cdn.korzh.com/eq/6.0.1/eq.core.min.css">
+}
+
+<div class="global-message"></div>
+
+<div class="container">
+    <h2>Orders</h2>
+    <div id="ProcessBar" class="eqjs-process-bar" style="display: none;"></div>
+    <div id="FilterBar" class="eqjs-fb-container"></div>
+    <div id="ResultPanel"></div>
+</div>
+
+
+@section Scripts {
+    <!-- EasyQuery script -->
+    <!--<script src="https://cdn.korzh.com/eq/6.0.1/eq.community.min.js"></script>-->
+        <script src="https://cdn.korzh.com/eq/6.0.1/eq.enterprise.min.js"></script>
+        <script src="https://cdn.korzh.com/eq/6.0.1/eq.odata.js"></script>
+
+ 
+
+    <script>
+        window.addEventListener('load', function () {
+
+            let options = {
+                //Load model on start
+                loadModelOnStart: true,
+
+                //hadlers
+                handlers: {
+                    //override error handler
+                    onError: function (message) {
+                        alert("Error: " + message.text)
+                    }
+                },
+
+                //Different widgets options
+                widgets: {
+                    //FilterBar options
+                    filterBar: {
+                        queryPanel: {
+                            attrElementFormat: "{entity} {attr}"
+                        }
+                    },
+
+                    //Grid options
+                    resultGrid: {
+                        tableClass: "table table-sm"
+                    }
+                },
+
+                result: {
+                    //do not clear result on each query chage
+                    clearResultOnQueryChange: false,
+
+                    paging: {
+                        useBootstrap: true,
+                        enabled: true
+                    }
+                }
+            };
+
+            var view = new easyquery.ui.DataFilterView();
+            view.getContext()
+                .useEnterprise("AlzWbvUgrkISH9AEAEoV7wBKJZG5U2")
+                .useOData({
+                    endpoint: 'odata',
+                    fromType: {
+                        entityType: 'ODataDemo.Models.Order',
+                        depth: 2
+                    },
+                    //set OData version 4.0.1 (supports in list operators)
+                    version: easyquery.odata.ODataVersion.ver_4_0_1
+                });
+
+            // after model loaded we add default columns
+            view.getContext().addEventListener('initialModelLoad', (model) => {
+                var query = view.getContext().getQuery();
+                addDefaultColumns(query);
+            });
+
+            view.init(options);
+
+            document['view'] = view;
+
+        });
+
+
+        function addDefaultColumns(query) {
+            //add columns you would like to display
+            var columns = [
+                {
+                    attributeId: "Customer.ContactTitle",
+                    caption: "Customer's contact title"
+                },
+                {
+                    attributeId: "Customer.Address",
+                    caption: "Customer's Address"
+                },
+                {
+                    attributeId: "Order.Freight",
+                    caption: "Freight"
+                },
+                {
+                    attributeId: "Order.ShipCountry",
+                    caption: "Ship to country"
+                },
+                {
+                    attributeId: "Order.OrderDate",
+                    caption: "Ordered date"
+                },
+                {
+                    attributeId: "Employee.FirstName",
+                    caption: "Employee's first name"
+                },
+                {
+                    attributeId: "Employee.LastName",
+                    caption: "Employee's last name"
+                }
+            ];
+
+            for (let column of columns) {
+                try {
+                    query.addColumn(column);
+                }
+                catch {
+                    console.error("Cannot add column: " + column.attributeId);
+                }
+            }
+        }
+    </script>
+}

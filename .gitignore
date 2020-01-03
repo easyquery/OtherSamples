@@ -3,3 +3,5 @@
 ################################################################################
 
 /odata/csharp/.vs/ODataDemo
+/odata/csharp/bin/Debug/netcoreapp2.2
+/odata/csharp/obj
