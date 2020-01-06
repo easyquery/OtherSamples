@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+				 id="WebApp_ID" version="2.5" metadata-complete="false">
+
+	<!-- Register the ServletContextListener implementation -->
+  <listener>
+    <listener-class>myservice.mynamespace.service.NwindListener</listener-class>
+  </listener>
+
+	<!-- Register the HttpServlet implementation -->
+	<servlet>
+	  <servlet-name>NwindODataServlet</servlet-name>
+	  <servlet-class>myservice.mynamespace.web.NwindODataServlet</servlet-class>
+	</servlet>
+	
+	<!-- 
+		Our OData service can be invoked at 
+		http://localhost:8080/DemoService/DemoService.svc
+	-->
+	<servlet-mapping>
+	  <servlet-name>NwindODataServlet</servlet-name>
+	  <url-pattern>/NWind.svc/*</url-pattern>
+	</servlet-mapping>
+</web-app>

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.korzh.odatademo</groupId>
+  <artifactId>odatademo</artifactId>
+  <version>4.0.0</version>
+  <packaging>war</packaging>
+
+  <name>odatademo Maven Webapp</name>
+  <!-- FIXME change it to the project's website -->
+  <url>http://www.example.com</url>
+
+  <properties>
+    <javax.version>2.5</javax.version>
+    <odata.version>4.7.0</odata.version>
+    <slf4j.version>1.7.7</slf4j.version>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+  </properties>
+
+  <repositories>
+		<repository>
+		    <id>jitpack.io</id>
+		    <url>https://jitpack.io</url>
+		</repository>
+	</repositories>
+
+  <dependencies>
+  
+    <dependency>
+        <groupId>com.github.SAP.olingo-jpa-processor-v4</groupId>
+        <artifactId>odata-jpa-processor</artifactId>
+        <version>0.3.7</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>servlet-api</artifactId>
+      <version>${javax.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.olingo</groupId>
+      <artifactId>odata-server-api</artifactId>
+      <version>${odata.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.apache.olingo</groupId>
+      <artifactId>odata-server-core</artifactId>
+      <version>${odata.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.olingo</groupId>
+      <artifactId>odata-commons-api</artifactId>
+      <version>${odata.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.olingo</groupId>
+      <artifactId>odata-commons-core</artifactId>
+      <version>${odata.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>${slf4j.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.7.11</version>
+      <scope>compile</scope>
+    </dependency>
+
+<!--
+    <dependency>
+      <groupId>org.eclipse.persistence</groupId>
+      <artifactId>eclipselink</artifactId>
+      <version>2.7.3</version>
+      <exclusions>
+        <exclusion>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>javax.persistence</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.eclipse.persistence</groupId>
+      <artifactId>javax.persistence</artifactId>
+      <version>2.1.1</version>
+    </dependency>
+-->
+
+    <dependency>
+        <groupId>org.hibernate</groupId>
+        <artifactId>hibernate-core</artifactId>
+        <version>5.4.10.Final</version>
+    </dependency>
+
+    <dependency>
+        <groupId>org.hibernate</groupId>
+        <artifactId>hibernate-entitymanager</artifactId>
+        <version>5.4.10.Final</version>
+    </dependency>
+
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>8.0.18</version>
+    </dependency>
+
+  </dependencies>
+    
+</project>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.2"
+	xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistencehttp://xmlns.jcp.org/xml/ns/persistence/persistence_2_2.xsd">
+  <persistence-unit name="Nwind"  transaction-type="RESOURCE_LOCAL">
+      
+    <!--
+    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+    -->
+
+    <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+
+    <class>myservice.mynamespace.model.Category</class>
+    <class>myservice.mynamespace.model.Employee</class>
+    <class>myservice.mynamespace.model.Customer</class>
+    <class>myservice.mynamespace.model.Supplier</class>
+    <class>myservice.mynamespace.model.Order</class>
+    <class>myservice.mynamespace.model.Product</class>
+    <class>myservice.mynamespace.model.OrderDetail</class>
+    
+    <properties>
+
+      <property name="javax.persistence.jdbc.user" value="equser"/>
+		  <property name="javax.persistence.jdbc.password" value="ILoveEasyQuery"/>
+      <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver"/>
+      <property name="javax.persistence.jdbc.url" value="jdbc:mysql://demodb.korzh.com:6603/nwind"/>
+
+      <property name="hibernate.show_sql" value="true"/>
+      <property name="hibernate.format_sql" value="true"/>
+      <property name="hibernate.use_sql_comments" value="false"/>
+
+    <!--
+      <property name="eclipselink.logging.level.sql" value="FINEST" />
+			<property name="eclipselink.logging.parameters" value="true" />
+			<property name="eclipselink.logging.timestamp" value="true" />
+			<property name="eclipselink.weaving" value="static" />
+      -->
+
+    </properties>
+  </persistence-unit>
+</persistence>
