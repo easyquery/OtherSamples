@@ -1,6 +1,6 @@
 ### What it's all about.
 
-Here we will describe how to use EasyQuery.JS widgets to add an advanced search or ad hoc reporting to yourPHP application. 
+Here we are going to describe how to use [EasyQuery.JS](https://korzh.com/easyquery/javascript) framework to add an advanced search or ad hoc reporting functionality to your PHP application. 
 
 In result you can something similar to this [EasyQuery demo page](https://korzh.com/demo/easyquery-asp-net-core-razor/advanced-search).
 
