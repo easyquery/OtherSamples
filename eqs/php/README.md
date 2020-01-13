@@ -41,7 +41,7 @@ and a simple condition like "Customer Country is equal to USA" to the "Condition
  Now, when our sample web-page is setup and running well, you can move to the next step: 
  getting the same behavior in your own web-application and for your own database.
 
-As you possibly know (if not - please read [this article](/easyquery/docs/fundamentals/how-it-works) first) EasyQuery components and widgets do not work with your database directly. 
+As you possibly know (if not - please read [this article](https://korzh.com/easyquery/docs/fundamentals/how-it-works) first) EasyQuery components and widgets do not work with your database directly. 
 Instead, they use a special user-friendly representation of your DB called *“data model”*.
 
 Data model defines which entities and attributes your users can operate with when they build their queries. 
@@ -85,7 +85,7 @@ When it's finished - you will find *YourModelID.xml* and *YourModelID.json* file
 
 #### Option 2: Data Model Editor (Windows only!)
 
-* [Download](https://korzh.com/download/dme_setup) and install Data Model Editor
+* [Download](https://korzh.com/download/dme_setup.exe) and install Data Model Editor
 
 * Run DME (DMEditor40.exe file)
 
@@ -107,9 +107,9 @@ This script processes all AJAX requests from EasyQuery widgets. At the beginning
 
 ```
 public static $SQBAPI_HOST= "http://sqlquerybuilder.com/"; //You will need to change this address in case of using a standalone (local) version of SQL Query Builder web-servive
-public static $SQBAPI_KEY = "3ea4523c-1d18-4d8c-82f5-c4f998d67daf"; //<-- change to your API key
-public static $MODEL_ID = "NWind"; //<-- change to the ID of your model
-public static $MODEL_FILE_JSON = "NWind.json"; //<-- change to the name of your model file
+public static $SQBAPI_KEY = "3ea4523c-1d18-4d8c-82f5-c4f998d67daf"; //<-- change this with your API key
+public static $MODEL_ID = "NWind"; //<-- change this with the ID of your model
+public static $MODEL_FILE_JSON = "NWind.json"; //<-- change this with the name of your model file
 ```
 Our sample script loads NWind.json model file. You need to replace the value of `MODEL_ID` and `MODEL_FILE_JSON` configuration settings to the ID of your model and the name of JSON file created on previous step (e.g. "MyModel" and "MyModel.json").
 
@@ -142,7 +142,7 @@ In our demo web page, we show generated SQL statement on any query change. Of co
 Our [SQL query builder](http://sqlquerybuilder.com) REST service</a> is free but has some limitations on the number of daily requests one user can send. 
 
 To remove those limits or if you want to avoid using a third-party web-service for SQL generation - we have a local version of this service which you can install on your own Windows, Linux or Mac server.  
-For more information please read [EasyQuery.JS web-page](/easyquery/javascript).
+For more information please read [EasyQuery.JS web-page](https://korzh.com/easyquery/javascript).
 
 
 Feel free to send a [support request](https://korzh.com/support) if you have any questions regarding EasyQuery widgets or SqlQueryBuilder.com web-service.
