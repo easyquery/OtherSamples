@@ -1,0 +1,22 @@
+{
+  "name": "nodejsdemo01",
+  "version": "1.0.0",
+  "description": "",
+  "main": "EasyQuery.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Korzh.com",
+  "license": "ISC",
+  "dependencies": {
+    "async": "^2.5.0",
+    "body-parser": "^1.18.2",
+    "express": "^4.15.5",
+    "fs": "0.0.1-security",
+    "mysql": "^2.14.1",
+    "path": "^0.12.7",
+    "request": "^2.83.0",
+    "request-promise": "^4.2.1",
+    "url-join": "^2.0.2"
+  }
+}
