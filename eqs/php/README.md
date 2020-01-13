@@ -27,7 +27,7 @@ It's preconfigured to run over well-known Northwind demo database and already in
 So, all you need to do is:
 
  * Copy the content of this folder to `/htdocs` folder of your Apache installation. You can use any sub-folder of `/htdocs` as well (e.g. `/htdocs/easyquery`)
- * Open index.html page from that folder in the browser. For example, if you place it into `apache dir>/htdocs/easyquery` folder you will be able to access it by `http://localhost/easyquery/QueryBuilder.html` (don’t forget to add your port number if you run your Apache server on other than 80 port).    
+ * Open index.html page from that folder in the browser. For example, if you place it into `apache dir>/htdocs/easyquery` folder you will be able to access it by `http://localhost/easyquery` (don’t forget to add your port number if you run your Apache server on other than 80 port).    
 
 If everything went well you will see an "advanced search" page similar to [this one](https://korzh.com/demo/easyquery-asp-net-core-razor/advanced-search) 
 and will be able to build a simple query and execute it. 
@@ -109,9 +109,8 @@ This script processes all AJAX requests from EasyQuery widgets. At the beginning
 public static $SQBAPI_HOST= "http://sqlquerybuilder.com/"; //You will need to change this address in case of using a standalone (local) version of SQL Query Builder web-servive
 public static $SQBAPI_KEY = "3ea4523c-1d18-4d8c-82f5-c4f998d67daf"; //<-- change this with your API key
 public static $MODEL_ID = "NWind"; //<-- change this with the ID of your model
-public static $MODEL_FILE_JSON = "NWind.json"; //<-- change this with the name of your model file
 ```
-Our sample script loads NWind.json model file. You need to replace the value of `MODEL_ID` and `MODEL_FILE_JSON` configuration settings to the ID of your model and the name of JSON file created on previous step (e.g. "MyModel" and "MyModel.json").
+Our sample script loads NWind.json model file. You need to replace the value of `MODEL_ID` configuration settings to the ID of your model and the name of JSON file created on previous step (e.g. "MyModel").
 
 ### Step 4. Generating and executing SQL by the query defined in UI
 EasyQuery widgets send the query, defined by the user in a JSON format. You can get it through `queryJson` parameter in `saveQuery`, `syncQuery` or `executeQuery` action handlers.   
@@ -130,7 +129,7 @@ public static $SQBAPI_HOST = "http://sqlquerybuilder.com/";
 public static $SQBAPI_KEY = "Your API key goes here";
 ```
 * Then press “Add model” link, enter the ID of your model (the same as you set for `MODEL_ID` config setting above) and copy the content of the XML file created on the step #2.
-* Now you can send a POST request to `/api/2.0/SqlQueryBuilder` action when you need to get an SQL statement. Send the JSON representation of the query returned by EasyQuery widgets as the request's content.
+* Now you can send a POST request to `/api/3.0/SqlQueryBuilder` action when you need to get an SQL statement. Send the JSON representation of the query returned by EasyQuery widgets as the request's content.
 
 So all you need to do now - is to execute this SQL statement over your database, return the result set back to the client-side in some format and show that result set to the user in a form of some data grid or chart. We gave an example of possible JSON string in the Node.js script from our sample.
 
