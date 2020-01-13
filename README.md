@@ -1,1 +1,1 @@
-# Samples
+# EasyQuery.JS Samples
