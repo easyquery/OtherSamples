@@ -19,7 +19,7 @@ var con = mysql.createConnection({
  
 con.connect(function(err) {
  if (err) throw err;
- console.log("Connected!");
+ console.log("Connected to db!");
 });
 
 
@@ -64,7 +64,7 @@ function renderDataTable(recordSet) {
 
             switch (table.cols[keyIdx].type) {
                 case 'number':
-                    return { v: value * 1 }
+                    return { v: value * 1 };
                 case 'datetime':
                     if (value !== null) {
                         var dateString = value.toISOString();
@@ -102,21 +102,20 @@ function renderRequestedList(recordSet) {
 function executeSql(sql) {
 
     return new Promise(function(resolve, reject){
-        con.query(sql, (error,result, fields)=>{
-            if (error){
+        con.query(sql, (error, result, fields) => {
+            if (error) {
                 reject(error);
                 return;
             }
 
-			if (!result) {
+            if (!result) {
                 reject('Empty result');
                 return;
             }
 
-			//console.log(result);
-            var recordSet = {rows: result,fields: fields }
+            var recordSet = { rows: result, fields: fields };
             resolve(recordSet);
-        })
+        });
     });
 }
 
@@ -129,25 +128,25 @@ function buildSql(modelId, query) {
 
     return new Promise((resolve, reject) => {
         let obj = {
-            url: urljoin(config.SQBAPI_HOST, 'api/3.0/SqlQueryBuilder'), 
+            url: urljoin(config.SQBAPI_HOST, 'api/3.0/SqlQueryBuilder'),
             method: 'POST',
             headers: {
                 'Content-type': "application/json",
                 'SQB-Key': config.SQBAPI_KEY
-             },
-            body:  JSON.stringify(request_data)
-        }
+            },
+            body: JSON.stringify(request_data)
+        };
 
         request(obj,
-		(error, response, body) => {
-            if (error) {
-                reject(error);
-            }
-            else if (response.statusCode >= 400) {
-                reject(new Error(response.body));
-            }
-            resolve(response.body);
-        })  
+            (error, response, body) => {
+                if (error) {
+                    reject(error);
+                }
+                else if (response.statusCode >= 400) {
+                    reject(new Error(response.body));
+                }
+                resolve(response.body);
+            });
     })
     .then((resJson) => {
         //get a response in JSON format	
