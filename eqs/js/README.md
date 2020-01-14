@@ -107,10 +107,9 @@ The `config.js` file contains all the settings you may need to change in order t
 SQBAPI_HOST: "http://sqlquerybuilder.com/",  //You will need to change this address in case of using a standalone (local) version of EasyQuery Server
 SQBAPI_KEY: "XXXX-XXXXXXXXX-XXXX-XXXX", //Your API key for SQL Query Builder service 
 MODEL_ID: "NWind"; //Your model's ID
-MODEL_FILE_JSON: "NWind.json"; //The name of your model file
 ```
 Our sample script loads NWind.json model file. 
-You will need to replace the values of `MODEL_ID` and `MODEL_FILE_JSON` configuration parameter to the ID of your model and the name of JSON file created on previous step (e.g. "MyModel" and "MyModel.json").
+You will need to replace the values of `MODEL_ID` configuration parameter to the ID of your model and the name of JSON file created on previous step (e.g. "MyModel").
 
 The `config.js` file contains the database connection settings as well. By default they are set to connect to our public database sample, but you may change this as you need.
 
@@ -137,7 +136,7 @@ SQBAPI_HOST: "http://sqlquerybuilder.com/";
 SQBAPI_KEY: "Your API key goes here";
 ```
 * Then press “Add model” link, enter the ID of your model (the same as you set for `MODEL_ID` config setting above) and copy the content of the XML file created on the step #2.
-* Now you can send a POST request to `/api/2.0/SqlQueryBuilder` action when you need to get an SQL statement. Send the JSON representation of the query returned by EasyQuery widgets as the request's content.
+* Now you can send a POST request to `/api/3.0/SqlQueryBuilder` action when you need to get an SQL statement. Send the JSON representation of the query returned by EasyQuery widgets as the request's content.
 
 So all you need to do now - is to execute this SQL statement over your database, return the result set back to the client-side in some format and show that result set to the user in a form of some data grid or chart. We gave an example of possible JSON string in the Node.js script from our sample.
 
