@@ -157,7 +157,7 @@
 		// Get JSON Model from EQS
 		// You can keep model.json file on your server and load it instead of making request
 		// Or cache your model after first call
-		$url = config::$SQBAPI_HOST.'api/3.0/DataModels/'.$modelId.'?format=json&browser='.$browser;
+		$url = config::$SQBAPI_HOST.'api/3.0/DataModels/'.$modelId.'?format=json&browser='.( $browser ? 'true' : 'false');
 
 		$options = array(
 		    'http' => array(
@@ -208,8 +208,8 @@
 		
 	}
 
-	// uncomment it if you want to use constant instead of url parameter
-	//$modelId = $MODEL_ID
+	//comment it  you want to use modelId parameter
+	$modelId = config::$MODEL_ID;
 
 	//GET /models/{modelId}
 	if ($action == "GetModel") {

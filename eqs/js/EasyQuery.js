@@ -201,7 +201,7 @@ app.get('/', (request, response) => {
 
 //GET /models/{modelId}
 app.get('/models/:modelId', (request, response) => {
-    const modelId = request.params.modelId;
+    const modelId = config.MODEL_ID; //request.params.modelId;
     
     //read model from a file and return in response
     getJsonModel(modelId, true).then(model => {
@@ -216,7 +216,7 @@ app.get('/models/:modelId', (request, response) => {
 //POST /models/{modelId}/queries/{queryId}/sync
 app.post('/models/:modelId/queries/:queryId/sync', (request, response) => {
     //return generated SQL to show it on our demo web-page. Not necessary to do in production!
-    const modelId = request.params.modelId;
+    const modelId = config.MODEL_ID; //request.params.modelId;
     const queryId = request.params.queryId;
 
     buildSql(modelId, request.body.query).then((sql)=>{
@@ -232,12 +232,12 @@ app.post('/models/:modelId/queries/:queryId/sync', (request, response) => {
 
 //POST /models/{modelId}/queries/{queryId}/execute
 app.post('/models/:modelId/queries/:queryId/execute', (request, response) => {
-    const modelId = request.params.modelId;
+    const modelId = config.MODEL_ID; //request.params.modelId;
     const queryId = request.params.queryId;
 
     buildSql(modelId, request.body.query)
     .then((sql) => {
-        var result = '{}';
+        var result = {};
         executeSql(sql).then((recordSet) => {
             if (recordSet){
                 var resultSet = renderDataTable(recordSet);
@@ -261,7 +261,7 @@ app.post('/models/:modelId/queries/:queryId/execute', (request, response) => {
 app.get('/models/:modelId/valuelists/:editorId', function(request, response){
     //here  we need to assemble the requested list based on its name and return it as JSON array
     //each item in that array is an object with two properties: "id" and "text"
-    const modelId = request.params.modelId;
+    const modelId = config.MODEL_ID; //request.params.modelId;
     const editorId = request.params.editorId;
 
     //if this is a SQL list request - we need to execute SQL statement and return the result set as a list of of {id, text} items
