@@ -147,6 +147,6 @@ Of course, you don’t need to do it in a production environment. Most possibly,
 Our [SQL query builder](http://sqlquerybuilder.com) REST service</a> is free but has some limitations on the number of daily requests one user can send. 
 
 To remove those limits or if you want to avoid using a third-party web-service for SQL generation - we have a local version of this service that you can install on your own Windows, Linux or Mac server.  
-For more information please read [EasyQuery.JS web-page](/easyquery/javascript).
+For more information please read [EasyQuery.JS web-page](https://korzh.com/easyquery/javascript).
 
 Feel free to send a [support request](https://korzh.com/support) if you have any questions regarding EasyQuery widgets or SqlQueryBuilder.com web-service.
