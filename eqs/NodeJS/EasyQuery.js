@@ -1,14 +1,17 @@
-var config = require('./config');
+const config = require('./config');
+const FileQueryStore = require('./fileQueryStore');
+const createExporter = require('./exporter');
 
-var mysql = require('mysql');
-var express = require("express");
-var bodyParser = require("body-parser");
-var request = require("request");
-var path = require("path");
-var urljoin = require('url-join');
+const mysql = require('mysql');
+const express = require("express");
+const bodyParser = require("body-parser");
+const path = require("path");
+const urljoin = require('url-join');
+const https = config.DB_HOST.startsWith('https') 
+            ? require('https') 
+            : require('http');
 
-
-var con = mysql.createConnection({
+const con = mysql.createConnection({
     host     : config.DB_HOST,
     port     : config.DB_PORT,
     user     : config.DB_USER,
@@ -18,8 +21,8 @@ var con = mysql.createConnection({
 
  
 con.connect(function(err) {
- if (err) throw err;
- console.log("Connected to db!");
+    if (err) throw err;
+    console.log("Connected to db!");
 });
 
 
@@ -101,7 +104,7 @@ function renderRequestedList(recordSet) {
 
 function executeSql(sql) {
 
-    return new Promise(function(resolve, reject){
+    return new Promise((resolve, reject) => {
         con.query(sql, (error, result, fields) => {
             if (error) {
                 reject(error);
@@ -119,34 +122,35 @@ function executeSql(sql) {
     });
 }
 
-function buildSql(modelId, query) {
+function buildSql(modelId, query, paging) {
     //send a request to the REST web-service
     var request_data = {
         modelId: modelId,
-        query: query
+        query: query,
+        paging: paging
     };
 
     return new Promise((resolve, reject) => {
-        let obj = {
-            url: urljoin(config.SQBAPI_HOST, 'api/3.0/SqlQueryBuilder'),
-            method: 'POST',
+        const url = urljoin(config.SQBAPI_HOST, 'api/3.0/SqlQueryBuilder');
+        const request = https.request(url, {
+            rejectUnauthorized: false,
             headers: {
                 'Content-type': "application/json",
                 'SQB-Key': config.SQBAPI_KEY
             },
-            body: JSON.stringify(request_data)
-        };
-
-        request(obj,
-            (error, response, body) => {
-                if (error) {
-                    reject(error);
-                }
-                else if (response.statusCode >= 400) {
-                    reject(new Error(response.body));
-                }
-                resolve(response.body);
-            });
+            method: 'POST',
+        }, (res) => {
+            let data = '';
+    
+            res.on("data", (chunk) => data += chunk);
+    
+            res.on("end", () => resolve(data));
+        })
+        .on("error", (err) => reject(err))
+        
+        request.write(JSON.stringify(request_data))
+        request.end();
+    
     })
     .then((resJson) => {
         //get a response in JSON format	
@@ -161,8 +165,10 @@ function buildSql(modelId, query) {
             else {
                 throw new Error("Error: No 'sql' field");
             }
+
+            const countSql = resObj.countSql;
     
-            return sql;
+            return { sql, countSql};
         }
         catch (e) {
             throw new Error("Error: Invalid response: " + e);
@@ -172,32 +178,45 @@ function buildSql(modelId, query) {
 
 function getJsonModel(modelId, browser = false){
     return new Promise((resolve, reject) => {
-        request({
-            url: urljoin(config.SQBAPI_HOST, 'api/3.0/DataModels', modelId) + `?format=json&browser=${browser}`,
-            method: 'GET',
-            headers: {
-                'SQB-Key': config.SQBAPI_KEY
-            }
-
-        }, (error, response, body) => {
-            if (error) {
-                reject(error);
-            } else if (response.statusCode >= 400) {
-                reject(new Error("Can't load json"));
-            }
-            resolve(JSON.parse(response.body));
-        });
+        const url = urljoin(config.SQBAPI_HOST, 'api/3.0/DataModels', modelId) + `?format=json&browser=${browser}`;
+        https.request(url, {
+                rejectUnauthorized: false,
+                method: 'GET',
+                headers: {
+                    'SQB-Key': config.SQBAPI_KEY
+                }
+            }, (res) => {
+                let data = '';
+        
+                res.on("data", (chunk) => data += chunk);
+        
+                res.on("end", () => {;
+                    if (res.statusCode >= 400) {
+                        reject(new Error("Can't load json"));
+                        resolve(JSON.parse(data));  
+                    } 
+                    else {
+                        resolve(JSON.parse(data));  
+                    }
+                });
+            })
+        .on("error", (err) => reject(err))
+        .end();
     });
 }
 
 
 const app = express();
+const queryStore = new FileQueryStore(app.path());
 
 app.use(bodyParser.json());
 
 app.get('/', (request, response) => {
     response.sendFile(path.join(__dirname, 'index.html')); 
 });
+
+
+app.use(express.static('public'));
 
 //GET /models/{modelId}
 app.get('/models/:modelId', (request, response) => {
@@ -213,16 +232,93 @@ app.get('/models/:modelId', (request, response) => {
    
 });
 
+//GET /models/{modelId}/queries
+app.get('/models/:modelId/queries', (request, response) => {
+    const modelId = config.MODEL_ID; //request.params.modelId;
+    const queryId = request.params.queryId;
+
+    queryStore.all(modelId)
+        .then(queries => {
+            response.send({
+                result: 'ok',
+                queries: queries
+            });
+        });
+});
+
+//GET /models/{modelId}/queries/{queryId}
+app.get('/models/:modelId/queries/:queryId', (request, response) => {
+    const modelId = config.MODEL_ID; //request.params.modelId;
+    const queryId = request.params.queryId;
+
+    queryStore.get(modelId, queryId)
+        .then(query => {
+            response.send({
+                result: 'ok',
+                query: query
+            });
+        });
+        
+});
+
+//POST /models/{modelId}/queries
+app.post('/models/:modelId/queries', (request, response) => {
+    const modelId = config.MODEL_ID; //request.params.modelId;
+    const queryId = request.params.queryId;
+    const query = request.body.query;
+
+    // uncomment if you want to save query on new request
+    // queryStore.add(modelId, queryId, query)
+    //    .then(query => {
+    //        response.send({
+    //            result: 'ok',
+    //            query: query
+    //        });
+    //    });
+    
+    response.send({
+        result: 'ok',
+        query: query
+    });  
+});
+
+//PUT /models/{modelId}/queries/{queryId}
+app.put('/models/:modelId/queries/:queryId', (request, response) => {
+    const modelId = config.MODEL_ID; //request.params.modelId;
+    const queryId = request.params.queryId;
+    const query = request.body.query;
+
+    queryStore.update(modelId, queryId, query)
+        .then(query => {
+            response.send({
+                result: 'ok',
+                query: query
+            });
+        });
+});
+
+//DELETE /models/:modelId}/queries/{queryId}
+app.delete('/models/:modelId/queries/:queryId', (request, response) => {
+ const modelId = config.MODEL_ID; //request.params.modelId;
+    const queryId = request.params.queryId;
+    
+    queryStore.remove(modelId, queryId)
+        .then(() => {
+            response.send();
+        });
+});
+
 //POST /models/{modelId}/queries/{queryId}/sync
 app.post('/models/:modelId/queries/:queryId/sync', (request, response) => {
     //return generated SQL to show it on our demo web-page. Not necessary to do in production!
     const modelId = config.MODEL_ID; //request.params.modelId;
     const queryId = request.params.queryId;
+    const query = request.body.query;
 
-    buildSql(modelId, request.body.query).then((sql)=>{
+    buildSql(modelId, query).then( res =>{
         response.send({
             result: 'ok',
-            statement: sql
+            statement: res.sql
         });
     })   
     .catch((error) => {
@@ -234,31 +330,50 @@ app.post('/models/:modelId/queries/:queryId/sync', (request, response) => {
 app.post('/models/:modelId/queries/:queryId/execute', (request, response) => {
     const modelId = config.MODEL_ID; //request.params.modelId;
     const queryId = request.params.queryId;
+    const query = request.body.query;
+    const options = request.body.options;
+    const paging = { limit: 20, page: options.page};
 
-    buildSql(modelId, request.body.query)
-    .then((sql) => {
-        var result = {};
-        executeSql(sql).then((recordSet) => {
+    buildSql(modelId, query, paging)
+    .then(res => {
+        return executeSql(res.sql).then((recordSet) => {
+            let result = {};
             if (recordSet){
-                var resultSet = renderDataTable(recordSet);
-                result = { result: "ok", statement: sql, resultSet: resultSet };	
+                const resultSet = renderDataTable(recordSet);
+                result = { result: "ok", statement: res.sql, resultSet: resultSet };	
+                if (res.countSql) {
+                    return executeSql(res.countSql).then(recordSet => {
+                        if (recordSet) {
+                            const totalRecords = recordSet.rows[0]["COUNT(*)"];
+                            result.paging = { 
+                                enabled: true, 
+                                pageIndex: paging.page, 
+                                pageSize: paging.limit,
+                                pageCount: Math.ceil(totalRecords / paging.limit),
+                                totalRecords: totalRecords
+                            }
+                        }
+                        
+                        return result;
+                    });
+                }
             }
             else {
                 result = {statement: "DATABASE CONNECTION ERROR!!!"};		
             }
             
-            response.send(result);
+            return result;
     
-        }).catch((error) => {
-            response.status(400).send(error);
-        });
-    }).catch((error) => {
-        response.status(400).send(error);
+        })
+    })
+    .then(result => response.send(result))
+    .catch(error => {
+        response.status(400).send(error) 
     });
 });
 
 //GET /models/{modelId}/valuelists/{editorId}
-app.get('/models/:modelId/valuelists/:editorId', function(request, response){
+app.get('/models/:modelId/valuelists/:editorId', (request, response) => {
     //here  we need to assemble the requested list based on its name and return it as JSON array
     //each item in that array is an object with two properties: "id" and "text"
     const modelId = config.MODEL_ID; //request.params.modelId;
@@ -301,7 +416,36 @@ app.get('/models/:modelId/valuelists/:editorId', function(request, response){
 
 });
 
+//POST /models/{modelId}/queries/{queryId}/export/{format}
+app.post('/models/:modelId/queries/:queryId/export/:format', (request, response) => {
+    const modelId = config.MODEL_ID; // request.params.modelId;
+    const queryId = request.params.queryId;
+    const format = request.params.format;
+    const query = request.body.query;
+
+    buildSql(modelId, query).then(res => 
+        executeSql(res.sql).then(dataSet => {
+            const exporter = createExporter(format);
+            const contentType = exporter.contentType();
+            const fileExtension = exporter.fileExtension();
+            const fileName = `${query.name}.${fileExtension}`;
+          
+            response.setHeader('Content-Disposition', 
+                `attachment; filename="${fileName}"`);
+            response.setHeader('Content-Type', contentType);
+
+            exporter.export(dataSet, response);
+            response.end();
+        })
+    )
+    .catch(error => {
+        console.error(error);
+        response.status(400).send(error.message)
+    });
+});
+
 var port = process.env.PORT || config.port || 3200; 
 app.listen(port);
+
 
 console.log("Server run on localhost: ", port);

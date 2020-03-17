@@ -4,8 +4,8 @@
         <meta charset="utf-8" />
         <title>EasyQuery.JS + Node.JS demo</title>
 
-        <link rel="stylesheet" href="https://cdn.korzh.com/eq/6.0.2/eq.core.min.css">
-        <link rel="stylesheet" href="https://cdn.korzh.com/eq/6.0.2/eq.view.min.css">
+        <link rel="stylesheet" href="https://cdn.korzh.com/eq/6.0.6/eq.core.min.css">
+        <link rel="stylesheet" href="https://cdn.korzh.com/eq/6.0.6/eq.view.min.css">
 
         <style>
             .eqjs-menu-levelDiv {
@@ -133,6 +133,10 @@
                 <div class="eqv-result-panel-title">
                     Result
                     <span id="ResultCount" style="display:none; margin-left:20px; font-size:small"></span>
+                    <span class="eqv-export-buttons">
+                        <a class="eqjs-export eqjs-disabled" href="javascript::void(0)" data-format="excel-html">Export to Excel</a>
+                        <a class="eqjs-export eqjs-disabled" href="javascript::void(0)" data-format="csv">Export to CSV</a>
+                    </span>
                 </div>
                 <div id="ResultPanel" class="eqv-result-panel-content">
                 </div>
@@ -159,9 +163,9 @@
        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.bundle.min.js" type="text/javascript"></script>
 
        <!-- EasyQuery script -->
-       <!--<script src="https://cdn.korzh.com/eq/6.0.2/eq.community.min.js"></script>-->
-       <script src="https://cdn.korzh.com/eq/6.0.2/eq.enterprise.min.js"></script>
-
+       <!--<script src="https://cdn.korzh.com/eq/6.0.6/eq.community.min.js"></script>-->
+       <script src="https://cdn.korzh.com/eq/6.0.6/eq.enterprise.min.js"></script>
+     
        <!-- EasyQuery Advanced Search view initialization -->
        <script>
            window.addEventListener('load', function() {
@@ -178,9 +182,7 @@
                    //Input here your model ID
                    defaultModelId: "NWind",
 
-                   //set it 'true'
-                   //if you have implemented your own export at the backend
-                   enableExport: false,
+                   enableExport: true,
                    locale: 'en',
 
                    // Middleware endpoint
@@ -239,9 +241,9 @@
                
                var view = new easyquery.ui.AdvancedSearchView();
                view.getContext().useEnterprise("AlzWbvUgrkISH9AEAEoV7wBKJXGX14");
-               view.getContext().getServices()
+               view.getContext().getServices();
                                 // use QueryStorage which uses Browser LocalStorage
-                                .registerQueryStorageResolver(context => new easyquery.core.BrowserQueryStorage(context));
+                                // .registerQueryStorageResolver(context => new easyquery.core.BrowserQueryStorage(context));
 
                view.init(options);
                document['AdvancedSearchView'] = view;
