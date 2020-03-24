@@ -48,19 +48,26 @@ function getTypeName(type) {
     }
 }
 
+
+const rowNumberAlias = '__rowNumber';
 function renderDataTable(recordSet) {
     var table = {};
 
-    table.cols = recordSet.fields.map(item => {
-        return {
-            id: item.name,
-            label: item.name,
-            type: getTypeName(item.type)
-        };
-    });
+    table.cols = recordSet.fields
+        .filter(item => item.name !== rowNumberAlias)
+        .map(item => {
+            return {
+                id: item.name,
+                label: item.name,
+                type: getTypeName(item.type)
+            };
+        });
 
     table.rows = recordSet.rows.map(row => {
         var rowData = {};
+
+        if (row[rowNumberAlias])
+            delete row[rowNumberAlias];
 
         rowData.c = Object.keys(row).map((key, keyIdx) => {
             let value = row[key];
@@ -87,6 +94,7 @@ function renderDataTable(recordSet) {
 
     return table;
 }
+
 
 function renderRequestedList(recordSet) {
     let result = recordSet.rows.map(row => {
@@ -344,7 +352,7 @@ app.post('/models/:modelId/queries/:queryId/execute', (request, response) => {
                 if (res.countSql) {
                     return executeSql(res.countSql).then(recordSet => {
                         if (recordSet) {
-                            const totalRecords = recordSet.rows[0]["COUNT(*)"];
+                            const totalRecords = recordSet.rows[0]["__rowCount"];
                             result.paging = { 
                                 enabled: true, 
                                 pageIndex: paging.page, 
