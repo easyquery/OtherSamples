@@ -8,7 +8,7 @@
               crossorigin="anonymous"
               integrity="sha256-eSi1q2PG6J7g7ib17yAaWMcrr5GrtohYChqibrV7PBE=" />
 
-        <link rel="stylesheet" href="https://cdn.korzh.com/eq/6.0.1/eq.core.min.css">
+        <link rel="stylesheet" href="https://cdn.korzh.com/eq/6.0.7/eq.core.min.css">
 
         <link rel="stylesheet" href="css/site.css" />
             
@@ -36,9 +36,9 @@
         </footer>
     
          <!-- EasyQuery script -->
-    <!--<script src="https://cdn.korzh.com/eq/6.0.1/eq.community.min.js"></script>-->
-    <script src="https://cdn.korzh.com/eq/6.0.1/eq.enterprise.min.js"></script>
-    <script src="https://cdn.korzh.com/eq/6.0.1/eq.odata.js"></script>
+    <!--<script src="https://cdn.korzh.com/eq/6.0.7/eq.community.min.js"></script>-->
+    <script src="https://cdn.korzh.com/eq/6.0.7/eq.enterprise.min.js"></script>
+    <script src="https://cdn.korzh.com/eq/6.0.7/eq.odata.js"></script>
 
     <script>
         window.addEventListener('load', function () {
