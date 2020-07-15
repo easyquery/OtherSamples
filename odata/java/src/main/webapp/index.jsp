@@ -36,9 +36,9 @@
         </footer>
     
          <!-- EasyQuery script -->
-    <!--<script src="https://cdn.korzh.com/eq/6.0.7/eq.community.min.js"></script>-->
-    <script src="https://cdn.korzh.com/eq/6.0.7/eq.enterprise.min.js"></script>
-    <script src="https://cdn.korzh.com/eq/6.0.7/eq.odata.js"></script>
+    <!--<script src="https://cdn.korzh.com/eq/6.0.13/eq.community.min.js"></script>-->
+    <script src="https://cdn.korzh.com/eq/6.0.13/eq.enterprise.min.js"></script>
+    <script src="https://cdn.korzh.com/eq/6.0.13/eq.odata.js"></script>
 
     <script>
         window.addEventListener('load', function () {
@@ -75,20 +75,22 @@
                 }
             };
             var view = new easyquery.ui.DataFilterView();
-            view.getContext()
-                .useEnterprise("AlzWbvUgrkISH9AEAEoV7wBKJZG5U2")
-                .useOData({
+            var context = view.getContext();
+            context.useEnterprise("AlzWbvUgrkISH9AEAEoV7wBKJZG5U2")
+            context.useOData({
                     endpoint: 'NWind.svc',
                     fromType: {
                         entityType: 'Nwind.Order',
-                        depth: 2
+                        depth: 3
                     }
                 });
+
             // after model loaded we add default columns
             view.getContext().addEventListener('initialModelLoad', (model) => {
                 var query = view.getContext().getQuery();
                 addDefaultColumns(query);
             });
+            
             view.init(options);
             document['view'] = view;
         });

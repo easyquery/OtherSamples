@@ -18,9 +18,9 @@
 
 @section Scripts {
     <!-- EasyQuery script -->
-    <!--<script src="https://cdn.korzh.com/eq/6.0.7/eq.community.min.js"></script>-->
-        <script src="https://cdn.korzh.com/eq/6.0.7/eq.enterprise.min.js"></script>
-        <script src="https://cdn.korzh.com/eq/6.0.7/eq.odata.js"></script>
+    <!--<script src="https://cdn.korzh.com/eq/6.0.13/eq.community.min.js"></script>-->
+        <script src="https://cdn.korzh.com/eq/6.0.13/eq.enterprise.min.js"></script>
+        <script src="https://cdn.korzh.com/eq/6.0.13/eq.odata.js"></script>
 
  
 
@@ -66,13 +66,13 @@
             };
 
             var view = new easyquery.ui.DataFilterView();
-            view.getContext()
-                .useEnterprise("AlzWbvUgrkISH9AEAEoV7wBKJZG5U2")
-                .useOData({
+            var context = view.getContext();
+            context.useEnterprise("AlzWbvUgrkISH9AEAEoV7wBKJZG5U2")
+            context.useOData({
                     endpoint: 'odata',
                     fromType: {
                         entityType: 'ODataDemo.Models.Order',
-                        depth: 2
+                        depth: 3
                     },
                     //set OData version 4.0.1 (supports in list operators)
                     version: easyquery.odata.ODataVersion.ver_4_0_1
