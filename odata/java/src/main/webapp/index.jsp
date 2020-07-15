@@ -8,7 +8,7 @@
               crossorigin="anonymous"
               integrity="sha256-eSi1q2PG6J7g7ib17yAaWMcrr5GrtohYChqibrV7PBE=" />
 
-        <link rel="stylesheet" href="https://cdn.korzh.com/eq/6.0.7/eq.core.min.css">
+        <link rel="stylesheet" href="https://cdn.korzh.com/eq/6.0.13/eq.core.min.css">
 
         <link rel="stylesheet" href="css/site.css" />
             
@@ -86,8 +86,8 @@
                 });
 
             // after model loaded we add default columns
-            view.getContext().addEventListener('initialModelLoad', (model) => {
-                var query = view.getContext().getQuery();
+            context.addEventListener('initialModelLoad', function (model) {
+                var query = context.getQuery();
                 addDefaultColumns(query);
             });
             

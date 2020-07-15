@@ -3,7 +3,7 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="https://cdn.korzh.com/eq/6.0.7/eq.core.min.css">
+    <link rel="stylesheet" href="https://cdn.korzh.com/eq/6.0.13/eq.core.min.css">
 }
 
 <div class="global-message"></div>
@@ -67,20 +67,19 @@
 
             var view = new easyquery.ui.DataFilterView();
             var context = view.getContext();
-            context.useEnterprise("AlzWbvUgrkISH9AEAEoV7wBKJZG5U2")
+            context.useEnterprise("AlzWbvUgrkISH9AEAEoV7wBKJZG5U2");
             context.useOData({
-                    endpoint: 'odata',
+                    endpoint: '/odata',
                     fromType: {
-                        entityType: 'ODataDemo.Models.Order',
-                        depth: 3
+                        entityType: 'ODataDemo.Models.Order'
                     },
                     //set OData version 4.0.1 (supports in list operators)
                     version: easyquery.odata.ODataVersion.ver_4_0_1
                 });
 
             // after model loaded we add default columns
-            view.getContext().addEventListener('initialModelLoad', (model) => {
-                var query = view.getContext().getQuery();
+            context.addEventListener('initialModelLoad', function (model) {
+                var query = context.getQuery();
                 addDefaultColumns(query);
             });
 
