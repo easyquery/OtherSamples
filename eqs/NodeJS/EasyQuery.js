@@ -200,8 +200,8 @@ function getJsonModel(modelId, browser = false){
         
                 res.on("end", () => {;
                     if (res.statusCode >= 400) {
-                        reject(new Error("Can't load json"));
-                        resolve(JSON.parse(data));  
+                        reject(new Error("Can't load model: " + data));
+                        resolve({});  
                     } 
                     else {
                         resolve(JSON.parse(data));  
@@ -236,7 +236,11 @@ app.get('/models/:modelId', (request, response) => {
             result: 'ok',
             model: model
         });
-    });
+    })
+    .catch((e) => {
+        console.error(e);
+        response.status(400).send("Error: " + e);
+    });;  ;
    
 });
 
@@ -420,7 +424,11 @@ app.get('/models/:modelId/valuelists/:editorId', (request, response) => {
                 values: []
             });
         }
-    });  
+    })
+    .catch((e) => {
+        console.error(e);
+        response.status(400).send("Error: " + e);
+    });;  
 
 });
 
