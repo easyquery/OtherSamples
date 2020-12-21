@@ -56,5 +56,7 @@ namespace ODataDemo.Models
         public string ShipPostalCode { get; set; }
 
         public string ShipCountry { get; set; }
+
+        public ICollection<OrderDetail> OrderDetails { get; set; }
     }
 }

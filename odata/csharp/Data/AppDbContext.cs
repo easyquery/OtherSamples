@@ -52,6 +52,11 @@ namespace ODataDemo
             modelBuilder.Entity<OrderDetail>()
                 .ToTable("Order_Details")
                 .HasKey(od => new { od.OrderID, od.ProductID });
+
+            modelBuilder.Entity<OrderDetail>()
+                .HasOne(od => od.Order)
+                .WithMany(o => o.OrderDetails)
+                .HasForeignKey(od => od.OrderID);
         }
 
     }

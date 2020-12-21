@@ -8,7 +8,7 @@
               crossorigin="anonymous"
               integrity="sha256-eSi1q2PG6J7g7ib17yAaWMcrr5GrtohYChqibrV7PBE=" />
 
-        <link rel="stylesheet" href="https://cdn.korzh.com/eq/6.0.13/eq.core.min.css">
+        <link rel="stylesheet" href="https://cdn.korzh.com/eq/6.1.4/eq.core.min.css">
 
         <link rel="stylesheet" href="css/site.css" />
             
@@ -36,9 +36,9 @@
         </footer>
     
          <!-- EasyQuery script -->
-    <!--<script src="https://cdn.korzh.com/eq/6.0.13/eq.community.min.js"></script>-->
-    <script src="https://cdn.korzh.com/eq/6.0.13/eq.enterprise.min.js"></script>
-    <script src="https://cdn.korzh.com/eq/6.0.13/eq.odata.js"></script>
+    <!--<script src="https://cdn.korzh.com/eq/6.1.4/eq.community.min.js"></script>-->
+    <script src="https://cdn.korzh.com/eq/6.1.4/eq.enterprise.min.js"></script>
+    <script src="https://cdn.korzh.com/eq/6.1.4/eq.odata.js"></script>
 
     <script>
         window.addEventListener('load', function () {
@@ -76,7 +76,7 @@
             };
             var view = new easyquery.ui.DataFilterView();
             var context = view.getContext();
-            context.useEnterprise("AlzWbvUgrkISH9AEAEoV7wBKJZG5U2")
+            context.useEnterprise("voC5XVNcovrofRwXkHNKEABNJ4VH40")
             context.useOData({
                     endpoint: 'NWind.svc',
                     fromType: {
