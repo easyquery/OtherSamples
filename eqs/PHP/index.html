@@ -4,8 +4,8 @@
         <meta charset="utf-8" />
         <title>EasyQuery.JS + PHP demo</title>
 
-        <link rel="stylesheet" href="https://cdn.korzh.com/eq/6.0.14/eq.core.min.css">
-        <link rel="stylesheet" href="https://cdn.korzh.com/eq/6.0.14/eq.view.min.css">
+        <link rel="stylesheet" href="https://cdn.korzh.com/eq/7.0.0/eq.core.min.css">
+        <link rel="stylesheet" href="https://cdn.korzh.com/eq/7.0.0/eq.view.min.css">
 
         <style>
             .eqjs-menu-levelDiv {
@@ -159,8 +159,8 @@
        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.bundle.min.js" type="text/javascript"></script>
 
        <!-- EasyQuery script -->
-       <!--<script src="https://cdn.korzh.com/eq/6.0.14/eq.community.min.js"></script>-->
-       <script src="https://cdn.korzh.com/eq/6.0.14/eq.enterprise.min.js"></script>
+       <!--<script src="https://cdn.korzh.com/eq/7.0.0/eq.community.min.js"></script>-->
+       <script src="https://cdn.korzh.com/eq/7.0.0/eq.enterprise.min.js"></script>
 
        <!-- EasyQuery Advanced Search view initialization -->
        <script>
@@ -183,13 +183,10 @@
                    enableExport: false,
                    locale: 'en',
 
-                   // Middleware endpoint
-                   endpoint: "EasyQuery.php",
-
                    //Handlers
                    handlers: {
                        //Error handler
-                       onError: function(error) {
+                       onError: function(_, error) {
                            console.error(error.action + " error:\n" + error.text);
                        }
                    },
@@ -202,7 +199,7 @@
                        //ColumnsPanel options
                        columnsPanel: {
                            allowAggrColumns: true,
-                           allowCustomExpressions: true,
+                           allowCustomExpressions: false,
                            attrElementFormat: "{entity} {attr}",
                            titleElementFormat: "{attr}",
                            showColumnCaptions: true,
@@ -239,7 +236,8 @@
                
                var view = new easyquery.ui.AdvancedSearchView();
                var context = view.getContext();
-               context.useEnterprise("AlzWbvUgrkISH9AEAEoV7wBKJXGX14");
+               context.useEndpoint('EasyQuery.php')
+                      .useEnterprise('M-Vm5PXqfpFr0P6bDruZ2wBIJ1H334');
                context.getServices()
                                 // use QueryStorage which uses Browser LocalStorage
                                 .registerQueryStorageResolver(context => new easyquery.core.BrowserQueryStorage(context));
