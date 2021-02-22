@@ -56,10 +56,13 @@
 			$eqCol = $enabledEqCols[$index];
 			$isAggr = property_exists($eqCol->expr, 'func');
 			$expr = $isAggr ? $eqCol->expr->args[0] : $eqCol->expr;
-			
+			$attrId = property_exists($expr, 'baseAttrId')
+				? $expr->baseAttrId 
+				: $expr->val;
+
             $columnDescr = array();
             $columnDescr['id'] = $eqCol->id;
-			$columnDescr['attrId'] = $expr->val;
+			$columnDescr['attrId'] = $attrId;
             $columnDescr['label'] = $col->name;
 			$columnDescr['type'] = $expr->dtype;
 			$columnDescr['isAggr'] = $isAggr;

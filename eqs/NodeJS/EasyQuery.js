@@ -39,12 +39,13 @@ function buildDataTable(query, recordSet) {
             const eqCol = enablesEqCols[index];
             const isAggr = typeof (eqCol.expr.func) !== 'undefined';
             const expr = isAggr ? eqCol.expr.args[0] : eqCol.expr;
+            const attrId = expr.baseAttrId ?? expr.val;
             return {
                 id: eqCol.id,
-                attrId: expr.val,
+                attrId: attrId,
                 label: item.name,
                 type: expr.dtype,
-                isAggr: typeof(eqCol.expr.func) !== 'undefined'
+                isAggr: isAggr
             };
         });
 
@@ -181,14 +182,13 @@ function getJsonModel(modelId, browser = false){
 const app = express();
 const queryStore = new FileQueryStore(app.path());
 
+app.use(express.static('public'));
 app.use(bodyParser.json());
 
 app.get('/', (request, response) => {
     response.sendFile(path.join(__dirname, 'index.html')); 
 });
 
-
-app.use(express.static('public'));
 
 //GET /models/{modelId}
 app.get('/models/:modelId', (request, response) => {
