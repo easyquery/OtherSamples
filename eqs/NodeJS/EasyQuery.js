@@ -7,7 +7,11 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const path = require("path");
 const urljoin = require('url-join');
-const https = config.DB_HOST.startsWith('https') 
+
+const isHttps = config.SQBAPI_HOST.startsWith('https');
+console.log("Is https mode: ", isHttps);
+
+const https = isHttps
             ? require('https') 
             : require('http');
 
@@ -17,79 +21,39 @@ const con = mysql.createConnection({
     user     : config.DB_USER,
     password : config.DB_PASSWD,
     database : config.DB_NAME
-  });
+});
 
- 
 con.connect(function(err) {
     if (err) throw err;
     console.log("Connected to db!");
 });
 
-
-function getTypeName(type) {
-    switch (type) {
-        case 0:
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        case 5:
-        case 8:
-        case 9:
-        case 246:
-            return 'number';
-        case 7:
-        case 10:
-        case 11:
-        case 12:
-            return 'datetime';
-        default:
-            return 'string';
-    }
-}
-
-
 const rowNumberAlias = '__rowNumber';
-function renderDataTable(recordSet) {
+function buildDataTable(query, recordSet) {
     var table = {};
 
+    const enablesEqCols = query.cols.filter(col => col.enabled !== false);
     table.cols = recordSet.fields
         .filter(item => item.name !== rowNumberAlias)
-        .map(item => {
+        .map((item, index) => {
+            const eqCol = enablesEqCols[index];
+            const isAggr = typeof (eqCol.expr.func) !== 'undefined';
+            const expr = isAggr ? eqCol.expr.args[0] : eqCol.expr;
             return {
-                id: item.name,
+                id: eqCol.id,
+                attrId: expr.val,
                 label: item.name,
-                type: getTypeName(item.type)
+                type: expr.dtype,
+                isAggr: typeof(eqCol.expr.func) !== 'undefined'
             };
         });
 
     table.rows = recordSet.rows.map(row => {
-        var rowData = {};
 
         if (row[rowNumberAlias])
             delete row[rowNumberAlias];
 
-        rowData.c = Object.keys(row).map((key, keyIdx) => {
-            let value = row[key];
-
-            switch (table.cols[keyIdx].type) {
-                case 'number':
-                    return { v: value * 1 };
-                case 'datetime':
-                    if (value !== null) {
-                        var dateString = value.toISOString();
-                        return {
-                            v: "Date(" + dateString.substr(0, 4) + ", " + (parseInt(dateString.substr(5, 2)) - 1) +
-                                ", " + dateString.substr(8, 2) + ")"
-                        };
-                    }
-                    return { v: "Date(0000,00,00)" };
-                default:
-                    return { v: value };
-            }
-        });
-
-        return rowData;
+        return Object.values(row);
     });
 
     return table;
@@ -110,7 +74,7 @@ function renderRequestedList(recordSet) {
     return result;
 }
 
-function executeSql(sql) {
+function fetchData(sql) {
 
     return new Promise((resolve, reject) => {
         con.query(sql, (error, result, fields) => {
@@ -143,18 +107,18 @@ function buildSql(modelId, query, paging) {
         const request = https.request(url, {
             rejectUnauthorized: false,
             headers: {
-                'Content-type': "application/json",
+                'Content-type': 'application/json',
                 'SQB-Key': config.SQBAPI_KEY
             },
             method: 'POST',
         }, (res) => {
             let data = '';
     
-            res.on("data", (chunk) => data += chunk);
+            res.on('data', (chunk) => data += chunk);
     
-            res.on("end", () => resolve(data));
+            res.on('end', () => resolve(data));
         })
-        .on("error", (err) => reject(err))
+        .on('error', (err) => reject(err))
         
         request.write(JSON.stringify(request_data))
         request.end();
@@ -231,7 +195,8 @@ app.get('/models/:modelId', (request, response) => {
     const modelId = config.MODEL_ID; //request.params.modelId;
     
     //read model from a file and return in response
-    getJsonModel(modelId, true).then(model => {
+    getJsonModel(modelId, true)
+    .then(model => {
         response.send({
             result: 'ok',
             model: model
@@ -247,15 +212,15 @@ app.get('/models/:modelId', (request, response) => {
 //GET /models/{modelId}/queries
 app.get('/models/:modelId/queries', (request, response) => {
     const modelId = config.MODEL_ID; //request.params.modelId;
-    const queryId = request.params.queryId;
 
-    queryStore.all(modelId)
-        .then(queries => {
-            response.send({
-                result: 'ok',
-                queries: queries
-            });
+    queryStore
+    .all(modelId)
+    .then(queries => {
+        response.send({
+            result: 'ok',
+            queries: queries
         });
+    });
 });
 
 //GET /models/{modelId}/queries/{queryId}
@@ -263,23 +228,23 @@ app.get('/models/:modelId/queries/:queryId', (request, response) => {
     const modelId = config.MODEL_ID; //request.params.modelId;
     const queryId = request.params.queryId;
 
-    queryStore.get(modelId, queryId)
-        .then(query => {
-            response.send({
-                result: 'ok',
-                query: query
-            });
+    queryStore
+    .get(modelId, queryId)
+    .then(query => {
+        response.send({
+            result: 'ok',
+            query: query
         });
-        
+    });     
 });
 
 //POST /models/{modelId}/queries
 app.post('/models/:modelId/queries', (request, response) => {
-    const modelId = config.MODEL_ID; //request.params.modelId;
-    const queryId = request.params.queryId;
     const query = request.body.query;
 
     // uncomment if you want to save query on new request
+    // const modelId = config.MODEL_ID; //request.params.modelId;
+    // const queryId = request.params.queryId;
     // queryStore.add(modelId, queryId, query)
     //    .then(query => {
     //        response.send({
@@ -300,13 +265,14 @@ app.put('/models/:modelId/queries/:queryId', (request, response) => {
     const queryId = request.params.queryId;
     const query = request.body.query;
 
-    queryStore.update(modelId, queryId, query)
-        .then(query => {
-            response.send({
-                result: 'ok',
-                query: query
-            });
+    queryStore
+    .update(modelId, queryId, query)
+    .then(query => {
+        response.send({
+            result: 'ok',
+            query: query
         });
+    });
 });
 
 //DELETE /models/:modelId}/queries/{queryId}
@@ -314,10 +280,11 @@ app.delete('/models/:modelId/queries/:queryId', (request, response) => {
  const modelId = config.MODEL_ID; //request.params.modelId;
     const queryId = request.params.queryId;
     
-    queryStore.remove(modelId, queryId)
-        .then(() => {
-            response.send();
-        });
+    queryStore
+    .remove(modelId, queryId)
+    .then(() => {
+        response.send();
+    });
 });
 
 //POST /models/{modelId}/queries/{queryId}/sync
@@ -338,49 +305,47 @@ app.post('/models/:modelId/queries/:queryId/sync', (request, response) => {
     });	
 });
 
-//POST /models/{modelId}/queries/{queryId}/execute
-app.post('/models/:modelId/queries/:queryId/execute', (request, response) => {
+//POST /models/{modelId}/fetch
+app.post('/models/:modelId/fetch', (request, response) => {
     const modelId = config.MODEL_ID; //request.params.modelId;
-    const queryId = request.params.queryId;
     const query = request.body.query;
-    const options = request.body.options;
-    const paging = { limit: 20, page: options.page};
+    const chunk = request.body.chunk;
+    const paging = { 
+        limit: chunk.limit, 
+        page: Math.trunc(chunk.offset / chunk.limit) + 1
+    };
 
-    buildSql(modelId, query, paging)
-    .then(res => {
-        return executeSql(res.sql).then((recordSet) => {
+    buildSql(modelId, query, chunk.needTotal ? paging : null)
+    .then(res => fetchData(res.sql)
+        .then(recordSet => {
             let result = {};
-            if (recordSet){
-                const resultSet = renderDataTable(recordSet);
-                result = { result: "ok", statement: res.sql, resultSet: resultSet };	
-                if (res.countSql) {
-                    return executeSql(res.countSql).then(recordSet => {
+            if (recordSet) {
+                const resultSet = buildDataTable(query, recordSet);
+                result = { result: 'ok', statement: res.sql, resultSet: resultSet };
+                if (chunk.needTotal && res.countSql) {
+                    return fetchData(res.countSql).then(recordSet => {
                         if (recordSet) {
-                            const totalRecords = recordSet.rows[0]["__rowCount"];
-                            result.paging = { 
-                                enabled: true, 
-                                pageIndex: paging.page, 
-                                pageSize: paging.limit,
-                                pageCount: Math.ceil(totalRecords / paging.limit),
+                            const totalRecords = recordSet.rows[0]['__rowCount'];
+                            result.meta = {
                                 totalRecords: totalRecords
                             }
                         }
-                        
+
                         return result;
                     });
                 }
             }
             else {
-                result = {statement: "DATABASE CONNECTION ERROR!!!"};		
+                result = { statement: "DATABASE CONNECTION ERROR!!!" };
             }
-            
+
             return result;
-    
         })
-    })
+    )
     .then(result => response.send(result))
     .catch(error => {
-        response.status(400).send(error) 
+        console.error(error);
+        response.status(400).send(error)
     });
 });
 
@@ -393,20 +358,21 @@ app.get('/models/:modelId/valuelists/:editorId', (request, response) => {
 
     //if this is a SQL list request - we need to execute SQL statement and return the result set as a list of of {id, text} items
     //First we need to get out json model from the SQB
-    getJsonModel(modelId, false).then((model) =>{
+    getJsonModel(modelId, false).then((model) => {
 
         var sql = null;
-        for(let editor of model.editors) {
+        for (let editor of model.editors) {
             if (editor.id === editorId) {
                 sql = editor.sql;
                 break;
             }
         }
-      
+
         if (sql) {
-             //And now execute our sql to get data and render list
-             executeSql(sql).then((recordSet) => {
-                if(recordSet !== null) {
+            //And now execute our sql to get data and render list
+            fetchData(sql)
+            .then((recordSet) => {
+                if (recordSet !== null) {
                     var values = renderRequestedList(recordSet);
                     response.send({
                         result: 'ok',
@@ -432,28 +398,27 @@ app.get('/models/:modelId/valuelists/:editorId', (request, response) => {
 
 });
 
-//POST /models/{modelId}/queries/{queryId}/export/{format}
-app.post('/models/:modelId/queries/:queryId/export/:format', (request, response) => {
+//POST /models/{modelId}/export/{format}
+app.post('/models/:modelId/export/:format', (request, response) => {
     const modelId = config.MODEL_ID; // request.params.modelId;
-    const queryId = request.params.queryId;
     const format = request.params.format;
     const query = request.body.query;
 
-    buildSql(modelId, query).then(res => 
-        executeSql(res.sql).then(dataSet => {
-            const exporter = createExporter(format);
-            const contentType = exporter.contentType();
-            const fileExtension = exporter.fileExtension();
-            const fileName = `${query.name}.${fileExtension}`;
-          
-            response.setHeader('Content-Disposition', 
-                `attachment; filename="${fileName}"`);
-            response.setHeader('Content-Type', contentType);
+    buildSql(modelId, query)
+    .then(res =>  fetchData(res.sql))
+    .then(dataSet => {
+        const exporter = createExporter(format);
+        const contentType = exporter.contentType();
+        const fileExtension = exporter.fileExtension();
+        const fileName = `${query.name}.${fileExtension}`;
 
-            exporter.export(dataSet, response);
-            response.end();
-        })
-    )
+        response.setHeader('Content-Disposition',
+            `attachment; filename="${fileName}"`);
+        response.setHeader('Content-Type', contentType);
+
+        exporter.export(dataSet, response);
+        response.end();
+    })
     .catch(error => {
         console.error(error);
         response.status(400).send(error.message)
