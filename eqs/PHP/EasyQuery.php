@@ -35,68 +35,47 @@
 	//endpoints, which this file processes
 	$endpoints = array(
 		new Endpoint("SyncQuery",    "/\/models\/(.*?)\/queries\/(.*?)\/sync\/?$/", "POST"),
-		new Endpoint("ExecuteQuery", "/\/models\/(.*?)\/queries\/(.*?)\/execute\/?$/", "POST"),
+		new Endpoint("FetchData", "/\/models\/(.*?)\/fetch\/?$/", "POST"),
 		new Endpoint("GetValueList", "/\/models\/(.*?)\/valuelists\/(.*?)\/?$/", "GET"),
 		new Endpoint("GetModel",     "/\/models\/(.*?)\/?$/", "GET")
 	);
 	
-	function getTypeName($type) {
-		
-		$types[1]='number';
-		$types[2]='number';
-		$types[3]='number';
-		$types[4]='number';
-		$types[5]='number';
-		$types[5]='number';
-		$types[8]='number';
-		$types[9]='number';
-		$types[246]='number';
-		$types[7]='datetime';
-		$types[10]='datetime';
-		$types[11]='datetime';
-		$types[12]='datetime';
-
-		if(!isset($types[$type]))
-			return 'string';
-
-		return $types[$type];
-	}
-
-	function renderDataTable($recordSet) {
+	function buildDataTable($query, $recordSet) {
 		$ret=array();
 		
 		$columns=$recordSet->fetch_fields();
-        foreach($columns as $col) {
-            $columnDescr=array();
-            $columnDescr['id']=$col->name;
-            $columnDescr['label']=$col->name;
-			$columnDescr['type']=getTypeName($col->type);
-            $ret['cols'][]=$columnDescr;
+		$enabledEqCols = array_filter($query->cols, function($col, $index) {
+			return !isset($col->enabled) || $col->enabled !== false;
+		}, ARRAY_FILTER_USE_BOTH);
+
+        foreach($columns as $index => $col) {
+
+			if($col->name == '__rowNumber')
+				continue;
+
+			$eqCol = $enabledEqCols[$index];
+			$isAggr = property_exists($eqCol->expr, 'func');
+			$expr = $isAggr ? $eqCol->expr->args[0] : $eqCol->expr;
+			$attrId = property_exists($expr, 'baseAttrId')
+				? $expr->baseAttrId 
+				: $expr->val;
+
+            $columnDescr = array();
+            $columnDescr['id'] = $eqCol->id;
+			$columnDescr['attrId'] = $attrId;
+            $columnDescr['label'] = $col->name;
+			$columnDescr['type'] = $expr->dtype;
+			$columnDescr['isAggr'] = $isAggr;
+
+            $ret['cols'][] = $columnDescr;
         }
 		
         while($array=$recordSet->fetch_array(MYSQLI_ASSOC)) {
-			$values=array_values($array);
-			$rowData=array();
-			$rowData['c']=array();
-			$col_index = 0;
-			$colType = '';
-			foreach($values as $value) {
-				$colType = $ret['cols'][$col_index]['type'];
-				if ($colType =='number') {
-                    $rowData['c'][]=array("v"=>$value*1);
-                }
-				else if ($colType =='datetime') {
-					$year = substr($value, 0, 4);
-					$month = intval(substr($value, 5, 2)) - 1;
-					$day = substr($value, 8, 2);
-                    $rowData['c'][]=array("v"=> "Date(".$year.", ".$month.", ".$day.")");
-				}
-                else {
-                    $rowData['c'][]=array("v"=>$value);
-                }
-                $col_index++;
+
+			if (array_key_exists('__rowNumber', $array)) {
+				unset($array['__rowNumber']);
 			}
-			$ret['rows'][]=$rowData;
+			$ret['rows'][] = array_values($array);
 			
 		}
 		return $ret;		
@@ -111,24 +90,29 @@
 		return $ret;
 	}
 	
-	function executeSql($sql) {
-		$mysqli=new mysqli(config::$DB_HOST,config::$DB_USER,config::$DB_PASSWD,config::$DB_NAME,config::$DB_PORT);
+	function fetchData($sql) {
+		$mysqli = new mysqli(config::$DB_HOST,config::$DB_USER,config::$DB_PASSWD,config::$DB_NAME,config::$DB_PORT);
 		if ($mysqli->connect_error) {
 			return null;
 		}
 		return $mysqli->query($sql);
 	}
 	
-	function buildSql($modelId, $query_json) {
+	function buildSql($modelId, $query, $paging = NULL) {
 		//send a request to the REST web-service	
 		$url = config::$SQBAPI_HOST.'api/3.0/SqlQueryBuilder';
-		$request_data = '{"modelId": "'.$modelId.'", "query":'.$query_json.'}';
+		$request_data = array();
+		$request_data['modelId'] = $modelId;
+		$request_data['query'] = $query;
+		if ($paging) {
+			$request_data['paging'] = $paging;
+		}
 
 		$options = array(
 		    'http' => array(
 		        'header'  => "Content-type: application/json\r\nSQB-Key: ".config::$SQBAPI_KEY."\r\n",
 		        'method'  => 'POST',
-		        'content' => $request_data,
+		        'content' => json_encode($request_data),
 		    ),
 		);
 
@@ -140,12 +124,10 @@
 		if ( $response !== FALSE) {
 			$res = json_decode($response, true); 	
 			
-			$sql = "";
-			//now we get an SQL statement by the query defined on client-side
-			if ($res != null && array_key_exists("sql", $res) )
-				$sql = $res["sql"]; 
-
-			return $sql;
+			if ($res == NULL) {
+				$res = array('sql' => '');
+			}
+			return $res;
 		}
 		else {
 			return 'ERROR';
@@ -225,30 +207,42 @@
 		//return generated SQL to show it on our demo web-page. Not necessary to do in production!
 		$data = json_decode(file_get_contents('php://input'), false);
 
-		$sql = "";
+		$res = array('sql' => '');
 
 		if (!isQueryEmpty($data->query)) {
-			$queryJson = json_encode($data->query);
-			$sql = buildSql($modelId, $queryJson);	
+			$res = buildSql($modelId, $data->query);	
 		}
 
 		header('Content-type: application/json');
-		$result = json_encode(array('statement' => $sql, 'result' => "ok"));
+		$result = json_encode(array('statement' => $res['sql'], 'result' => "ok"));
 		echo $result;
 	}
 
-	//POST /models/{modelId}/queries/{queryId}/execute
-	else if ($action == "ExecuteQuery") {
+	//POST /models/{modelId}/fetch
+	else if ($action == "FetchData") {
+	
 		//get query in JSON format
 		$data = json_decode(file_get_contents('php://input'), false);
-		
-		$query_json = json_encode($data->query);
-		$sql = buildSql($modelId, $query_json);
+		$chunk = $data->chunk;
+		$paging = array('limit' => $chunk->limit, 'page' => intval($chunk->offset / $chunk-> limit) + 1);
+		$res = buildSql($modelId, $data->query, $paging);
 		$result='{}';
-		$recordSet = executeSql($sql);
+		$recordSet = fetchData($res['sql']);
 		if ($recordSet) {
-			$resultSet=renderDataTable($recordSet);
-			$ret=array('result'=>'ok', 'statement' => $sql, 'resultSet' => $resultSet);
+
+			$resultSet = buildDataTable($data->query, $recordSet);
+
+			$meta = NULL;
+			if ($chunk->needTotal && array_key_exists('countSql', $res)) {
+				$countSet = fetchData($res['countSql']);
+				$row = $countSet->fetch_array(MYSQLI_ASSOC);
+				$meta = array('totalRecords' => $row['__rowCount']);
+			}
+
+			$ret=array('result'=>'ok', 'statement' => $res['sql'], 'resultSet' => $resultSet);
+			if ($meta) {
+				$ret['meta'] = $meta;
+			}
 
 			$result=json_encode($ret);	
 		}
@@ -286,7 +280,7 @@
 		header('Content-type: application/json');
 		$result = '{"result: "ok", "values": []}';
 
-		if($recordSet=executeSql($sql)) {
+		if($recordSet=fetchData($sql)) {
 			$ret=array('result'=>'ok', 'values' => renderRequestedList($recordSet));
 			$result=json_encode($ret);	
 		} 
