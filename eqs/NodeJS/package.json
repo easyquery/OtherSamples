@@ -9,7 +9,7 @@
   "author": "Korzh.com",
   "license": "ISC",
   "dependencies": {
-    "async": "^2.5.0",
+    "async": "^2.6.4",
     "body-parser": "^1.18.2",
     "express": "^4.15.5",
     "fs": "0.0.1-security",
